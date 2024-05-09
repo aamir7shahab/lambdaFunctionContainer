@@ -14,14 +14,11 @@ phases:
     - python --version
     - pip install --upgrade pip
     - pip install --upgrade awscli
-    - docker info
   build:
     commands:
     - echo Build started on `date`
-    - echo Building the Docker image...a
-    - ls
+    - echo Building the Docker image
     - docker build -t $ECR:$CODEBUILD_BUILD_NUMBER .
-    - docker container ls
   post_build:
     commands:
     - echo Build completed on `date`
