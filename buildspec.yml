@@ -1,0 +1,32 @@
+version: 0.2
+env:
+  variables:
+    ECR: "lamda-container-image"
+    IMAGE_URI: "621763382787.dkr.ecr.us-east-1.amazonaws.com"
+    LAMBDA_NAME: "test-conatiner-lambda"
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+    - echo Pre Build started
+    - python --version
+    - pip install --upgrade pip
+    - pip install --upgrade awscli
+    - docker info
+  build:
+    commands:
+    - echo Build started on `date`
+    - echo Building the Docker image...a
+    - ls
+    - docker build -t $ECR:$CODEBUILD_BUILD_NUMBER .
+    - docker container ls
+  post_build:
+    commands:
+    - echo Build completed on `date`
+    - echo Pushing the Docker image...
+    - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $IMAGE_URI
+    - docker tag $ECR:$CODEBUILD_BUILD_NUMBER $IMAGE_URI/$ECR:$CODEBUILD_BUILD_NUMBER
+    - docker push $IMAGE_URI/$ECR:$CODEBUILD_BUILD_NUMBER
+    - aws lambda update-function-code --function-name $LAMBDA_NAME --image-uri $IMAGE_URI/$ECR:$CODEBUILD_BUILD_NUMBER
